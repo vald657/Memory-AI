@@ -15,6 +15,10 @@ npm install vaul@latest
 npm install
 \`\`\`
 
+2. Créez la base de données :
+
+   Installez puis ouvrez Xampp Panel controller, démarer les services "Apache" puis "MySQL", lancez phpMyAdmin en cliquant sur le bouton "Admin" sur la ligne de "mySQL", créez une nouvelle base de donnée nommée "memory_ai", et en importez y le dossier "memory_ia.sql".
+
 ## Démarrage
 
 Lancez le serveur de développement :
