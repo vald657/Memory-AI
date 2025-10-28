@@ -1,16 +1,23 @@
-# Projet v0
+# Projet mit sur pieds par les étudiants de 3IL3 dans le cadre du cours de prompt engineering
 
-Ce projet a été créé avec v0 et utilise Next.js 16, React 19, et Tailwind CSS v4.
+Ce projet  utilise Next.js 16, React 19, et Tailwind CSS v4.
 
 ## Installation
 
-1. Téléchargez le fichier ZIP du projet
-2. Extrayez le contenu dans votre dossier de projet
-3. Installez les dépendances :
+1. Clonez le repo sur votre pc
+2. Installez les dépendances :
+
+\`\`\`bash
+npm install vaul@latest
+\`\`\`
 
 \`\`\`bash
 npm install
 \`\`\`
+
+2. Créez la base de données :
+
+   Installez puis ouvrez Xampp Panel controller, démarer les services "Apache" puis "MySQL", lancez phpMyAdmin en cliquant sur le bouton "Admin" sur la ligne de "mySQL", créez une nouvelle base de donnée nommée "memory_ai", et en importez y le dossier "memory_ia.sql".
 
 ## Démarrage
 
