@@ -25,13 +25,12 @@ npm install
 4. Créez le fichier ".env.local" dans la racine du projet
 
 Y coller :
-# Configuration de la base de données MySQL
+
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=memory_ai
 
-# Configuration Next.js
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 
