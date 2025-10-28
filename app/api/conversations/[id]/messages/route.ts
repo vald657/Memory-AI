@@ -24,7 +24,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       id,
     ])
 
-    return NextResponse.json({ messages })
+    const parsedMessages = messages.map((message) => ({
+      ...message,
+      attachments: message.attachments ? JSON.parse(message.attachments) : [],
+    }))
+
+    return NextResponse.json({ messages: parsedMessages })
   } catch (error) {
     console.error("[v0] Get messages error:", error)
     return NextResponse.json({ error: "Erreur lors de la récupération des messages" }, { status: 500 })
@@ -64,7 +69,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (isFirstMessage && role === "user") {
       // Extraire les 50 premiers caractères du message pour le titre
       const title = content.length > 50 ? content.substring(0, 50) + "..." : content
-      await query("UPDATE conversations SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [title, id])
+      await query("UPDATE conversations SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [title, id])
     } else {
       // Mettre à jour seulement la date de modification
       await query("UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id])
