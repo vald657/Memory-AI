@@ -36,7 +36,7 @@ git clone https://github.com/vald657/Memory-AI.git
 
 \`\`\`
    
-3. Installez les dépendances :
+2. Installez les dépendances :
 
 \`\`\`bash
 
@@ -50,7 +50,7 @@ npm install
 
 \`\`\`
 
-4. Créez le fichier ".env.local" dans la racine du projet
+3. Créez le fichier ".env.local" dans la racine du projet
 
 Y coller :
 
@@ -62,7 +62,7 @@ DB_NAME=memory_ai
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 
-5. Créez la base de données :
+4. Créez la base de données :
 
    Installez puis ouvrez Xampp Panel controller, démarer les services "Apache" puis "MySQL", lancez phpMyAdmin en cliquant sur le bouton "Admin" sur la ligne de "mySQL", créez une nouvelle base de donnée nommée "memory_ai", et en importez y le dossier "memory_ia.sql".
 
