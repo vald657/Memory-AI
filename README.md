@@ -2,24 +2,52 @@
 
 Ce projet  utilise Next.js 16, React 19, et Tailwind CSS v4.
 
+## Prérequis
+
+Avoir installé sur son pc Node.js et git.
+
+Vérifier si c'est deja le cas avec:
+
+\`\`\`bash
+
+node --version
+git --version
+npm --version
+
+\`\`\`
+
+Si vous obtennez un resultat similaire à :
+" v24.11.0
+v22.11.0
+10.9.0" 
+c'est bon, si non installez les.
+Node.js: https://nodejs.org
+git: https://git-scm.com/downloads
+
 ## Installation
 
 1. Clonez le repo sur votre pc
 
 \`\`\`bash
-mkdir c:\memoiry_ai
-cd c:\memoiry_ai 
+
+mkdir c:\memory_ai
+cd c:\memory_ai 
 git clone https://github.com/vald657/Memory-AI.git
+
 \`\`\`
    
 3. Installez les dépendances :
 
 \`\`\`bash
+
 npm install vaul@latest
+
 \`\`\`
 
 \`\`\`bash
+
 npm install
+
 \`\`\`
 
 4. Créez le fichier ".env.local" dans la racine du projet
@@ -43,7 +71,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 Lancez le serveur de développement :
 
 \`\`\`bash
+
 npm run dev
+
 \`\`\`
 
 Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
