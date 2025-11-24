@@ -1,2 +1,5 @@
-print("hello ")
-input("salut")
+
+from fastapi import FastAPI
+
+import ollama
+

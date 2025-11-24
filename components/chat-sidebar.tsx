@@ -99,7 +99,8 @@ export function ChatSidebar({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 px-3">
+      <ScrollArea className="flex-1 px-3 scrollbar-visible overflow-y-auto">
+
         <div className="space-y-4">
           {Object.entries(groupedConversations).map(([dateLabel, convs]) => (
             <div key={dateLabel}>

@@ -6,24 +6,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const cookieStore = await cookies()
     const userId = cookieStore.get("userId")?.value
-
-    if (!userId) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
+    if (!userId) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
     const { id } = await params
-
-    // Vérifier que la conversation appartient à l'utilisateur
     const conversations = await query<any[]>("SELECT * FROM conversations WHERE id = ? AND user_id = ?", [id, userId])
+    if (conversations.length === 0) return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 })
 
-    if (conversations.length === 0) {
-      return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 })
-    }
-
-    const messages = await query<any[]>("SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC", [
-      id,
-    ])
-
+    const messages = await query<any[]>("SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC", [id])
     const parsedMessages = messages.map((message) => ({
       ...message,
       attachments: message.attachments ? JSON.parse(message.attachments) : [],
@@ -40,51 +29,43 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const cookieStore = await cookies()
     const userId = cookieStore.get("userId")?.value
-
-    if (!userId) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
+    if (!userId) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
     const { id } = await params
     const { role, content, attachments } = await request.json()
 
-    // Vérifier que la conversation appartient à l'utilisateur
+    // Vérifier la conversation
     const conversations = await query<any[]>("SELECT * FROM conversations WHERE id = ? AND user_id = ?", [id, userId])
+    if (conversations.length === 0) return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 })
 
-    if (conversations.length === 0) {
-      return NextResponse.json({ error: "Conversation non trouvée" }, { status: 404 })
-    }
-
-    const existingMessages = await query<any[]>("SELECT COUNT(*) as count FROM messages WHERE conversation_id = ?", [
-      id,
-    ])
-
-    const isFirstMessage = existingMessages[0].count === 0
-
+    // 1️⃣ Enregistrer le message utilisateur
     const result = await query<any>(
       "INSERT INTO messages (conversation_id, role, content, attachments) VALUES (?, ?, ?, ?)",
-      [id, role, content, attachments ? JSON.stringify(attachments) : null],
+      [id, role, content, attachments ? JSON.stringify(attachments) : null]
     )
 
-    if (isFirstMessage && role === "user") {
-      // Extraire les 50 premiers caractères du message pour le titre
-      const title = content.length > 50 ? content.substring(0, 50) + "..." : content
-      await query("UPDATE conversations SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [title, id])
-    } else {
-      // Mettre à jour seulement la date de modification
-      await query("UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id])
+    // 2️⃣ Appeler FastAPI pour générer la réponse IA si c’est un message user
+    let aiResponse = null
+    if (role === "user") {
+      try {
+        const fastapiRes = await fetch(`http://localhost:8000/ask?prompt=${encodeURIComponent(content)}`)
+        const data = await fastapiRes.json()
+        aiResponse = data.response || "Aucune réponse disponible."
+
+        // 3️⃣ Enregistrer la réponse IA
+        await query(
+          "INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)",
+          [id, "assistant", aiResponse]
+        )
+      } catch (error) {
+        console.error("Erreur FastAPI:", error)
+      }
     }
 
-    const message = {
-      id: result.insertId,
-      conversation_id: Number.parseInt(id),
-      role,
-      content,
-      attachments,
-      created_at: new Date(),
-    }
-
-    return NextResponse.json({ message }, { status: 201 })
+    return NextResponse.json({
+      message_id: result.insertId,
+      ai_response: aiResponse,
+    }, { status: 201 })
   } catch (error) {
     console.error("[v0] Create message error:", error)
     return NextResponse.json({ error: "Erreur lors de la création du message" }, { status: 500 })

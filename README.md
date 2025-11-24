@@ -58,3 +58,16 @@ Les alias sont configurés dans \`tsconfig.json\` :
 - \`npm run build\` - Compile le projet pour la production
 - \`npm run start\` - Démarre le serveur de production
 - \`npm run lint\` - Vérifie le code avec ESLint
+
+#####################################################################################################
+
+start le serveur fastAPI.py  
+ai_memoria\Memory AI\backend\app\models>  uvicorn fastAPI:app --reload --host 127.0.0.1 --port 8000
+
+##### start le serveur ollama 
+ollama serve
+
+### gestion d'erreur du serveur ollama : port par defaut deja utiliser 
+taskkill /PID <PID> /F
+
+###### start Xampp

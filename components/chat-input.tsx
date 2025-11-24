@@ -1,25 +1,36 @@
 "use client"
 
-import type React from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowUp, Paperclip, X } from "lucide-react"
 
 interface ChatInputProps {
-  onSendMessage?: (message: string, attachments?: any[]) => void
+  onSendMessage?: (message: string, attachments?: any[], role?: "user" | "assistant") => void
 }
 
 export function ChatInput({ onSendMessage }: ChatInputProps) {
   const [message, setMessage] = useState("")
   const [attachments, setAttachments] = useState<any[]>([])
+  const [isSending, setIsSending] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSubmit = () => {
-    if (message.trim()) {
-      onSendMessage?.(message, attachments.length > 0 ? attachments : undefined)
+  const handleSubmit = async () => {
+    if (!message.trim()) return
+
+    setIsSending(true)
+
+    try {
+      // 1️⃣ Ajouter le message utilisateur au parent
+      onSendMessage?.(message, attachments.length > 0 ? attachments : undefined, "user")
+
+      // Réinitialiser l'input
       setMessage("")
       setAttachments([])
+    } catch (error) {
+      console.error("Erreur envoi message:", error)
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -35,7 +46,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
     if (!files) return
 
     for (const file of Array.from(files)) {
-      const formData = new FormData()
+      const formData = new FormData() 
       formData.append("file", file)
 
       try {
@@ -43,7 +54,6 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
           method: "POST",
           body: formData,
         })
-
         const data = await res.json()
         if (res.ok) {
           setAttachments((prev) => [...prev, data.file])
@@ -86,9 +96,10 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Envoyer un message"
+            placeholder={isSending ? "IA répond..." : "Envoyer un message"}
             className="min-h-[60px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             rows={1}
+            disabled={isSending}
           />
           <div className="flex items-center gap-2">
             <input
@@ -98,11 +109,12 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               multiple
               className="hidden"
               onChange={handleFileUpload}
+              disabled={isSending}
             />
-            <Button size="icon" variant="ghost" onClick={() => fileInputRef.current?.click()} className="h-9 w-9">
+            <Button size="icon" variant="ghost" onClick={() => fileInputRef.current?.click()} className="h-9 w-9" disabled={isSending}>
               <Paperclip className="h-4 w-4" />
             </Button>
-            <Button size="icon" onClick={handleSubmit} disabled={!message.trim()} className="h-9 w-9 rounded-full">
+            <Button size="icon" onClick={handleSubmit} disabled={!message.trim() || isSending} className="h-9 w-9 rounded-full">
               <ArrowUp className="h-4 w-4" />
             </Button>
           </div>

@@ -13,6 +13,7 @@ interface Message {
   role: "user" | "assistant"
   content: string
   created_at: string
+  attachments?: any[]
 }
 
 interface Conversation {
@@ -22,62 +23,54 @@ interface Conversation {
   updated_at: string
 }
 
-export default function Home() {
+export default function ChatPage() {
   const router = useRouter()
+  const [user, setUser] = useState<any>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [currentConversationId, setCurrentConversationId] = useState<number | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [isAITyping, setIsAITyping] = useState(false)
   const pollingInterval = useRef<NodeJS.Timeout | null>(null)
 
-  // Vérifier l'authentification
+  // Vérifier l'authentification utilisateur
   useEffect(() => {
     fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.user) {
-          router.push("/login")
-        } else {
-          setUser(data.user)
-        }
+      .then(res => res.json())
+      .then(data => {
+        if (!data.user) router.push("/login")
+        else setUser(data.user)
       })
   }, [router])
 
-  // Charger les conversations
+  // Charger les conversations quand l’utilisateur est connecté
   useEffect(() => {
-    if (user) {
-      loadConversations()
-    }
+    if (user) loadConversations()
   }, [user])
 
-  // Polling pour les nouveaux messages
+  // Charger les messages + actualisation automatique
   useEffect(() => {
     if (currentConversationId) {
       loadMessages(currentConversationId)
 
-      // Actualiser les messages toutes les 3 secondes
       pollingInterval.current = setInterval(() => {
         loadMessages(currentConversationId)
       }, 3000)
 
       return () => {
-        if (pollingInterval.current) {
-          clearInterval(pollingInterval.current)
-        }
+        if (pollingInterval.current) clearInterval(pollingInterval.current)
       }
     }
   }, [currentConversationId])
 
+  // ---- Fonctions principales ----
   const loadConversations = async () => {
     try {
       const res = await fetch("/api/conversations")
       const data = await res.json()
-      if (res.ok) {
-        setConversations(data.conversations)
-      }
-    } catch (error) {
-      console.error("[v0] Error loading conversations:", error)
+      if (res.ok) setConversations(data.conversations)
+    } catch (err) {
+      console.error("Erreur chargement conversations:", err)
     }
   }
 
@@ -85,11 +78,9 @@ export default function Home() {
     try {
       const res = await fetch(`/api/conversations/${conversationId}/messages`)
       const data = await res.json()
-      if (res.ok) {
-        setMessages(data.messages)
-      }
-    } catch (error) {
-      console.error("[v0] Error loading messages:", error)
+      if (res.ok) setMessages(data.messages)
+    } catch (err) {
+      console.error("Erreur chargement messages:", err)
     }
   }
 
@@ -106,8 +97,8 @@ export default function Home() {
         setMessages([])
         loadConversations()
       }
-    } catch (error) {
-      console.error("[v0] Error creating conversation:", error)
+    } catch (err) {
+      console.error("Erreur création conversation:", err)
     }
   }
 
@@ -115,9 +106,9 @@ export default function Home() {
     setCurrentConversationId(conversationId)
   }
 
+  // ---- Gestion de l’envoi de message ----
   const handleSendMessage = async (content: string, attachments?: any[]) => {
     if (!currentConversationId) {
-      // Créer une nouvelle conversation si aucune n'est sélectionnée
       const res = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,10 +117,14 @@ export default function Home() {
       const data = await res.json()
       if (res.ok) {
         setCurrentConversationId(data.conversation.id)
+        setMessages(prev => [...prev, { id: Date.now(), role: "user", content, created_at: new Date().toISOString(), attachments }])
+        setIsAITyping(true)
         await sendMessageToConversation(data.conversation.id, content, attachments)
         loadConversations()
       }
     } else {
+      setMessages(prev => [...prev, { id: Date.now(), role: "user", content, created_at: new Date().toISOString(), attachments }])
+      setIsAITyping(true)
       await sendMessageToConversation(currentConversationId, content, attachments)
     }
   }
@@ -141,18 +136,20 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: "user", content, attachments }),
       })
-      const data = await res.json()
       if (res.ok) {
-        loadMessages(conversationId)
+        // Recharge les messages et supprime l’indicateur IA
+        await loadMessages(conversationId)
+      } else {
+        console.error("Erreur API Next:", await res.text())
       }
-    } catch (error) {
-      console.error("[v0] Error sending message:", error)
+    } catch (err) {
+      console.error("Erreur envoi message:", err)
+    } finally {
+      setIsAITyping(false)
     }
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -173,7 +170,7 @@ export default function Home() {
         </header>
 
         <div className="flex-1 overflow-hidden">
-          <ChatArea messages={messages} />
+          <ChatArea messages={messages} isAITyping={isAITyping} />
         </div>
 
         <ChatInput onSendMessage={handleSendMessage} />

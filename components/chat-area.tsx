@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { Paperclip } from "lucide-react"
+import { TypingIndicator } from "./TypingIndicator"
 
 interface Message {
   id: number
@@ -16,16 +17,15 @@ interface Message {
 
 interface ChatAreaProps {
   messages?: Message[]
+  isAITyping?: boolean
 }
 
-export function ChatArea({ messages = [] }: ChatAreaProps) {
+export function ChatArea({ messages = [], isAITyping = false }: ChatAreaProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages])
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [messages, isAITyping])
 
   if (messages.length === 0) {
     return (
@@ -51,7 +51,7 @@ export function ChatArea({ messages = [] }: ChatAreaProps) {
             <div
               className={cn(
                 "max-w-[80%] rounded-lg p-4",
-                message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
               )}
             >
               {message.attachments && message.attachments.length > 0 && (
@@ -61,7 +61,7 @@ export function ChatArea({ messages = [] }: ChatAreaProps) {
                       key={index}
                       className={cn(
                         "flex items-center gap-1 rounded px-2 py-1 text-xs",
-                        message.role === "user" ? "bg-primary-foreground/20" : "bg-background",
+                        message.role === "user" ? "bg-primary-foreground/20" : "bg-background"
                       )}
                     >
                       <Paperclip className="h-3 w-3" />
@@ -79,6 +79,18 @@ export function ChatArea({ messages = [] }: ChatAreaProps) {
             )}
           </div>
         ))}
+
+        {/* Indicateur de saisie IA */}
+        {isAITyping && (
+          <div className="flex gap-4 items-center justify-start">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-muted text-xs">AI</AvatarFallback>
+            </Avatar>
+            <div className="max-w-[20%] rounded-lg bg-muted p-3">
+              <TypingIndicator />
+            </div>
+          </div>
+        )}
       </div>
     </ScrollArea>
   )

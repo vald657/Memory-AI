@@ -124,3 +124,16 @@
     @apply bg-background text-foreground;
   }
 }
+/* Personnalisation de la scrollbar */
+.scrollbar-visible::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.4);
+  border-radius: 4px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 120, 0.7);
+}
