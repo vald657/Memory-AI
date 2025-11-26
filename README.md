@@ -1,4 +1,4 @@
-# Projet mit sur pieds par les étudiants de 3IL3 dans le cadre du cours de prompt engineering
+# Projet mis sur pieds par les étudiants de 3IL3 dans le cadre du cours de prompt engineering
 
 Ce projet  utilise Next.js 16, React 19, et Tailwind CSS v4.
 
