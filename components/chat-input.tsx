@@ -21,7 +21,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
     setIsSending(true)
 
     try {
-      // 1️⃣ Ajouter le message utilisateur au parent
+      // 1️Ajouter le message utilisateur au parent
       onSendMessage?.(message, attachments.length > 0 ? attachments : undefined, "user")
 
       // Réinitialiser l'input

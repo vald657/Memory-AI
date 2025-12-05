@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
@@ -42,18 +44,25 @@ export function ChatArea({ messages = [], isAITyping = false }: ChatAreaProps) {
     <ScrollArea className="h-full" ref={scrollRef}>
       <div className="mx-auto max-w-3xl space-y-6 p-6">
         {messages.map((message) => (
-          <div key={message.id} className={cn("flex gap-4", message.role === "user" ? "justify-end" : "justify-start")}>
+          <div
+            key={message.id}
+            className={cn("flex gap-4", message.role === "user" ? "justify-end" : "justify-start")}
+          >
             {message.role === "assistant" && (
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-muted text-xs">AI</AvatarFallback>
               </Avatar>
             )}
+
             <div
               className={cn(
-                "max-w-[80%] rounded-lg p-4",
-                message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+                "max-w-[80%] rounded-lg p-4 prose prose-sm dark:prose-invert prose-headings:font-bold prose-p:leading-relaxed prose-ul:my-1 prose-li:my-0.5",
+                message.role === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-foreground"
               )}
             >
+              {/* Pièces jointes */}
               {message.attachments && message.attachments.length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-2">
                   {message.attachments.map((file: any, index: number) => (
@@ -70,8 +79,13 @@ export function ChatArea({ messages = [], isAITyping = false }: ChatAreaProps) {
                   ))}
                 </div>
               )}
-              <p className="text-sm leading-relaxed">{message.content}</p>
+
+              {/* TEXTE RENDU EN MARKDOWN */}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
             </div>
+
             {message.role === "user" && (
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">U</AvatarFallback>
